@@ -49,6 +49,10 @@
    $next_pc[31:0] = $reset ? 0 :
                     $pc[31:0] + 32'b100;
    
+   // Verilog macro: IMem
+   // $$ represents the assigned signals
+   `READONLY_MEM($pc, $$instr[31:0]);
+   
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
