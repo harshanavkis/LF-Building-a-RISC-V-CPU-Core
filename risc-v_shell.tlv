@@ -70,7 +70,35 @@
    $is_s_instr = $instr[6:2] == 5'b01000 ||
                  $instr[6:2] == 5'b01001;
    $is_b_instr = $instr[6:2] == 5'b11000;
-   $is_j_instr = $instr[6:2] == 5'b11011;   
+   $is_j_instr = $instr[6:2] == 5'b11011;
+   
+   // Decoder: Extracting fields
+   // First: Non immediate fields
+   $funct7[6:0] = $instr[31:25];
+   $funct3[2:0] = $instr[14:12];
+   $rs1[4:0]    = $instr[19:15];
+   $rs2[4:0]    = $instr[24:20];
+   $rd[4:0]     = $instr[11:7];
+   $opcode[6:0] = $instr[6:0];
+   
+   // Check if fields are valid
+   $funct7_valid = $is_r_instr;
+   $funct3_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+   $rs1_valid    = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+   $rs2_valid    = $is_r_instr || $is_s_instr || $is_b_instr;
+   $rd_valid     = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+   $imm_valid    = $is_i_instr || $is_s_instr || $is_b_instr || $is_u_instr || $is_j_instr;
+   
+   // Suppress log messages
+   `BOGUS_USE($rd $rd_valid $rs1 $rs1_valid $funct7 $funct7_valid $funct3 $funct3_valid)
+   
+   // Get immediate values from the isntruction
+   $imm[31:0] = $is_i_instr ? { {21{$instr[31]}}, $instr[30:20] } :
+                $is_s_instr ? { {21{$instr[31]}}, $instr[30:25], $instr[11:7] } :
+                $is_b_instr ? { {20{$instr[31]}}, $instr[7], $instr[30:25], $instr[11:8], {1'b0}} :
+                $is_u_instr ? { {$instr[31:12]}, {12'b0}} :
+                $is_j_instr ? { {12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], {1'b0}} :
+                32'b0;
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
