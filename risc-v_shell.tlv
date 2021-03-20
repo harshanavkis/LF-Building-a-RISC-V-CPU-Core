@@ -120,7 +120,7 @@
    $rd2_index[4:0] = $rs2;
    $wr_index[4:0]  = $rd;
    
-   // Register file: enable read and write depending on instructi
+   // Register file: enable read and write depending on instruction
    $rd1_en = $rs1_valid;
    $rd2_en = $rs2_valid;
    $wr_en  = $rd_valid;
@@ -128,6 +128,12 @@
    // Register file: connect output
    $src1_value[31:0] = $rd1_data;
    $src2_value[31:0] = $rd2_data;
+   
+   // ALU: ADDI and ADD
+   $result[31:0] =
+       $is_addi ? $src1_value + $imm :
+       $is_add  ? $src1_value + $src2_value :
+       32'b0;
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
