@@ -115,11 +115,25 @@
    $is_addi  = $dec_bits ==? 11'bx_000_0010011;
    $is_add = $dec_bits == 11'b0_000_0110011;
    
+   // Register file: decode
+   $rd1_index[4:0] = $rs1;
+   $rd2_index[4:0] = $rs2;
+   $wr_index[4:0]  = $rd;
+   
+   // Register file: enable read and write depending on instructi
+   $rd1_en = $rs1_valid;
+   $rd2_en = $rs2_valid;
+   $wr_en  = $rd_valid;
+   
+   // Register file: connect output
+   $src1_value[31:0] = $rd1_data;
+   $src2_value[31:0] = $rd2_data;
+   
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
    *failed = *cyc_cnt > M4_MAX_CYC;
    
-   //m4+rf(32, 32, $reset, $wr_en, $wr_index[4:0], $wr_data[31:0], $rd1_en, $rd1_index[4:0], $rd1_data, $rd2_en, $rd2_index[4:0], $rd2_data)
+   m4+rf(32, 32, $reset, $wr_en, $wr_index[4:0], $wr_data[31:0], $rd1_en, $rd1_index[4:0], $rd1_data, $rd2_en, $rd2_index[4:0], $rd2_data)
    //m4+dmem(32, 32, $reset, $addr[4:0], $wr_en, $wr_data[31:0], $rd_en, $rd_data)
    m4+cpu_viz()
 \SV
