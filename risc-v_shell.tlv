@@ -30,6 +30,7 @@
    // Test result value in x14, and set x31 to reflect pass/fail.
    m4_asm(ADDI, x30, x14, 111111010100) // Subtract expected value of 44 to set x30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
    m4_asm(BGE, x0, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm(ADDI, x0, x0, 1)
    m4_asm_end()
    m4_define(['M4_MAX_CYC'], 50)
    //---------------------------------------------------------------------------------
@@ -123,7 +124,7 @@
    // Register file: enable read and write depending on instruction
    $rd1_en = $rs1_valid;
    $rd2_en = $rs2_valid;
-   $wr_en  = $rd_valid;
+   $wr_en  = $rd_valid ? ( ($rd == 5'b0) ? 1'b0 : 1'b1 ) : 1'b0;
    
    // Register file: connect output
    $src1_value[31:0] = $rd1_data;
@@ -134,6 +135,9 @@
        $is_addi ? $src1_value + $imm :
        $is_add  ? $src1_value + $src2_value :
        32'b0;
+   
+   // Register file: write back output
+   $wr_data[31:0] = $result;
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
