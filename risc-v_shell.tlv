@@ -48,6 +48,7 @@
    // Program counter: sequential only
    $pc[31:0] = >>1$next_pc;
    $next_pc[31:0] = $reset ? 0 :
+                    $taken_br ? $br_tgt_pc :
                     $pc[31:0] + 32'b100;
    
    // Verilog macro: IMem
@@ -138,6 +139,25 @@
    
    // Register file: write back output
    $wr_data[31:0] = $result;
+   
+   // To branch or to not branch
+   $is_br = $is_beq  ||
+            $is_bne  ||
+            $is_blt  ||
+            $is_bge  ||
+            $is_bltu ||
+            $is_bgeu;
+   $taken_br = ( $is_br == 0 ) ? 1'b0 :
+               $is_beq  ? ( $rd1_data == $rd2_data ? 1'b1 : 1'b0 ) :
+               $is_bne  ? ( $rd1_data != $rd2_data ? 1'b1 : 1'b0 ) :
+               $is_blt  ? ( ( $rd1_data < $rd2_data ) ^ ( $rd1_data[31] != $rd2_data[31] ) ? 1'b1 : 1'b0 ) :
+               $is_bge  ? ( ( $rd1_data >= $rd2_data ) ^ ( $rd1_data[31] != $rd2_data[31] ) ? 1'b1 : 1'b0 ) :
+               $is_bltu ? ( $rd1_data < $rd2_data ? 1'b1 : 1'b0 ) :
+               $is_bgeu ? ( $rd1_data >= $rd2_data ? 1'b1 : 1'b0 ) :
+               1'b0;
+   
+   // To branch or to not branch: target PC
+   $br_tgt_pc[31:0] = $pc + $imm;
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = 1'b0;
